@@ -316,6 +316,10 @@ public final class ReactNativeUtil {
         return new NotificationCompat.BigTextStyle().bigText(bigText);
     }
 
+    public static NotificationCompat.InboxStyle getInboxStyle(String text) {
+        return new NotificationCompat.InboxStyle().setSummaryText(text);
+    }
+
     public static class UrlWrapper {
         public static HttpURLConnection openConnection(String url) throws Exception {
             return (HttpURLConnection)(new URL(url)).openConnection();

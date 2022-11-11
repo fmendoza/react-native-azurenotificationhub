@@ -98,6 +98,12 @@ public final class ReactNativeNotificationsHandler {
                     Resources res = context.getResources();
                     String packageName = context.getPackageName();
 
+                    String largeIcon = bundle.getString(KEY_REMOTE_NOTIFICATION_LARGE_ICON);
+                    int largeIconResId = ReactNativeUtil.getLargeIcon(bundle, largeIcon, res, packageName);
+                    Bitmap largeIconBitmap = BitmapFactory.decodeResource(res, largeIconResId);
+
+                    int smallIconResId = ReactNativeUtil.getSmallIcon(bundle, res, packageName);
+
                     String title = bundle.getString(KEY_REMOTE_NOTIFICATION_TITLE);
                     if (title == null) {
                         ApplicationInfo appInfo = context.getApplicationInfo();
@@ -115,9 +121,30 @@ public final class ReactNativeNotificationsHandler {
                             priority,
                             bundle.getBoolean(KEY_REMOTE_NOTIFICATION_AUTO_CANCEL, true));
 
+
+                    NotificationCompat.Builder summaryNotificationBuilder = null;
+
                     String group = bundle.getString(KEY_REMOTE_NOTIFICATION_GROUP);
+
                     if (group != null) {
                         notificationBuilder.setGroup(group);
+
+                        summaryNotificationBuilder = ReactNativeUtil.initNotificationCompatBuilder(
+                                context,
+                                notificationChannelID,
+                                title,
+                                bundle.getString(KEY_REMOTE_NOTIFICATION_TICKER),
+                                NotificationCompat.VISIBILITY_PRIVATE,
+                                priority,
+                                bundle.getBoolean(KEY_REMOTE_NOTIFICATION_AUTO_CANCEL, true));
+
+
+                        summaryNotificationBuilder
+                                .setSmallIcon(smallIconResId)
+                                .setLargeIcon(largeIconBitmap)
+                                .setStyle(ReactNativeUtil.getInboxStyle(title))
+                                .setGroup(group)
+                                .setGroupSummary(true);
                     }
 
                     notificationBuilder.setContentText(message);
@@ -132,23 +159,19 @@ public final class ReactNativeNotificationsHandler {
                         notificationBuilder.setNumber(Integer.parseInt(numberString));
                     }
 
-                    int smallIconResId = ReactNativeUtil.getSmallIcon(bundle, res, packageName);
                     notificationBuilder.setSmallIcon(smallIconResId);
 
                     if (bundle.getString(KEY_REMOTE_NOTIFICATION_AVATAR_URL) == null) {
-                        String largeIcon = bundle.getString(KEY_REMOTE_NOTIFICATION_LARGE_ICON);
-                        int largeIconResId = ReactNativeUtil.getLargeIcon(bundle, largeIcon, res, packageName);
-                        Bitmap largeIconBitmap = BitmapFactory.decodeResource(res, largeIconResId);
                         if (largeIconResId != 0 && (
                                 largeIcon != null ||
                                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)) {
                             notificationBuilder.setLargeIcon(largeIconBitmap);
                         }
                     } else {
-                        Bitmap largeIconBitmap = ReactNativeUtil.fetchImage(
+                        Bitmap avatar = ReactNativeUtil.fetchImage(
                                 bundle.getString(KEY_REMOTE_NOTIFICATION_AVATAR_URL));
-                        if (largeIconBitmap != null) {
-                            notificationBuilder.setLargeIcon(largeIconBitmap);
+                        if (avatar != null) {
+                            notificationBuilder.setLargeIcon(avatar);
                         }
                     }
 
@@ -157,6 +180,19 @@ public final class ReactNativeNotificationsHandler {
                         bigText = message;
                     }
                     notificationBuilder.setStyle(ReactNativeUtil.getBigTextStyle(bigText));
+
+                    String imageUrl = bundle.getString(KEY_REMOTE_NOTIFICATION_IMAGE_URL);
+
+                    if (imageUrl != null) {
+                        Bitmap bitmap = ReactNativeUtil.fetchImage(imageUrl);
+                        if (bitmap != null) {
+                            notificationBuilder
+                                    .setLargeIcon(bitmap)
+                                    .setStyle(new NotificationCompat.BigPictureStyle()
+                                            .bigPicture(bitmap)
+                                            .bigLargeIcon(null));
+                        }
+                    }
 
                     // Create notification intent
                     Intent intent = ReactNativeUtil.createNotificationIntent(context, bundle, intentClass);
@@ -195,6 +231,8 @@ public final class ReactNativeNotificationsHandler {
                     // Process notification's actions
                     ReactNativeUtil.processNotificationActions(context, bundle, notificationBuilder, notificationID);
 
+                    notificationBuilder.setPriority(2);
+
                     Notification notification = notificationBuilder.build();
                     NotificationManager notificationManager = (NotificationManager) context.getSystemService(
                             Context.NOTIFICATION_SERVICE);
@@ -204,6 +242,12 @@ public final class ReactNativeNotificationsHandler {
                     } else {
                         notificationManager.notify(notificationID, notification);
                     }
+
+                    if (summaryNotificationBuilder != null) {
+                        Notification summaryNotification = summaryNotificationBuilder.build();
+                        notificationManager.notify(group.hashCode(), summaryNotification);
+                    }
+
                 } catch (Exception e) {
                     Log.e(TAG, ERROR_SEND_PUSH_NOTIFICATION, e);
                 }
