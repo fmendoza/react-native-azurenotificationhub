@@ -183,7 +183,7 @@ public final class ReactNativeNotificationsHandler {
 
                     String imageUrl = bundle.getString(KEY_REMOTE_NOTIFICATION_IMAGE_URL);
 
-                    if (imageUrl != null) {
+                    if (imageUrl != null && ReactNativeUtil.isConnectedToWiFi(context)) {
                         Bitmap bitmap = ReactNativeUtil.fetchImage(imageUrl);
                         if (bitmap != null) {
                             notificationBuilder

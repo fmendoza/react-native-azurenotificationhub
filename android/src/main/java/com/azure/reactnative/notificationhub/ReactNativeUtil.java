@@ -7,6 +7,8 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.RingtoneManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -337,6 +339,20 @@ public final class ReactNativeUtil {
             Log.e(TAG, ERROR_FETCH_IMAGE, e);
             return null;
         }
+    }
+
+    public static boolean isConnectedToWiFi(Context context) {
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo networkInfo = connectivityManager != null ? connectivityManager.getActiveNetworkInfo() : null;
+
+        boolean isConnected = false;
+
+        if (networkInfo != null && networkInfo.isConnected()) {
+            isConnected = networkInfo.getType() == ConnectivityManager.TYPE_WIFI;
+        }
+
+        return isConnected;
     }
 
     public static String genUUID() {
