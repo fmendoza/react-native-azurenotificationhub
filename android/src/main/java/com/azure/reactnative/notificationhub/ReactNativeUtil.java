@@ -1,5 +1,6 @@
 package com.azure.reactnative.notificationhub;
 
+import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -10,6 +11,7 @@ import android.media.RingtoneManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -241,6 +243,7 @@ public final class ReactNativeUtil {
         return intent;
     }
 
+    @SuppressLint("UnspecifiedImmutableFlag")
     public static void processNotificationActions(Context context, Bundle bundle,
                                            NotificationCompat.Builder notification,
                                            int notificationID) {
@@ -271,8 +274,17 @@ public final class ReactNativeUtil {
                 // Add "action" for later identifying which button gets pressed.
                 bundle.putString(KEY_REMOTE_NOTIFICATION_ACTION, action);
                 actionIntent.putExtra(KEY_NOTIFICATION_PAYLOAD_TYPE, bundle);
-                PendingIntent pendingActionIntent = PendingIntent.getBroadcast(context, notificationID, actionIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT);
+
+                final PendingIntent pendingActionIntent;
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    pendingActionIntent = PendingIntent.getBroadcast(context, notificationID, actionIntent,
+                            PendingIntent.FLAG_IMMUTABLE);
+                } else {
+                    pendingActionIntent = PendingIntent.getBroadcast(context, notificationID, actionIntent,
+                            PendingIntent.FLAG_UPDATE_CURRENT);
+                }
+
                 notification.addAction(icon, action, pendingActionIntent);
             }
         }

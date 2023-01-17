@@ -1,5 +1,6 @@
 package com.azure.reactnative.notificationhub;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -73,6 +74,7 @@ public final class ReactNativeNotificationsHandler {
      *
      * Example: {"data":{"message":"Notification Hub test notification"}}
      */
+    @SuppressLint("UnspecifiedImmutableFlag")
     public static void sendNotification(final Context context,
                                         final Bundle bundle,
                                         final String notificationChannelID) {
@@ -216,8 +218,17 @@ public final class ReactNativeNotificationsHandler {
                     }
 
                     int notificationID = bundle.getString(KEY_REMOTE_NOTIFICATION_ID).hashCode();
-                    PendingIntent pendingIntent = PendingIntent.getActivity(context, notificationID, intent,
-                            PendingIntent.FLAG_UPDATE_CURRENT);
+
+                    final PendingIntent pendingIntent;
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        pendingIntent = PendingIntent.getActivity(context, notificationID, intent,
+                                PendingIntent.FLAG_IMMUTABLE);
+                    } else {
+                        pendingIntent = PendingIntent.getActivity(context, notificationID, intent,
+                                PendingIntent.FLAG_UPDATE_CURRENT);
+                    }
+
                     notificationBuilder.setContentIntent(pendingIntent);
 
                     if (!bundle.containsKey(KEY_REMOTE_NOTIFICATION_VIBRATE) || bundle.getBoolean(KEY_REMOTE_NOTIFICATION_VIBRATE)) {
