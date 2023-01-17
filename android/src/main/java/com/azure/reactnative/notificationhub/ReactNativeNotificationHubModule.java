@@ -15,7 +15,7 @@ import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.WritableMap;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.GoogleApiAvailabilityLight;
 
 import com.microsoft.windowsazure.messaging.NotificationHub;
 
@@ -160,7 +160,7 @@ public class ReactNativeNotificationHubModule extends ReactContextBaseJavaModule
             notificationHubUtil.setUUID(reactContext, uuid);
         }
 
-        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+        GoogleApiAvailabilityLight apiAvailability = GoogleApiAvailabilityLight.getInstance();
         int resultCode = apiAvailability.isGooglePlayServicesAvailable(reactContext);
         if (resultCode != ConnectionResult.SUCCESS) {
             if (apiAvailability.isUserResolvableError(resultCode)) {
@@ -272,7 +272,7 @@ public class ReactNativeNotificationHubModule extends ReactContextBaseJavaModule
             notificationHubUtil.setUUID(reactContext, uuid);
         }
 
-        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+        GoogleApiAvailabilityLight apiAvailability = GoogleApiAvailabilityLight.getInstance();
         int resultCode = apiAvailability.isGooglePlayServicesAvailable(reactContext);
         if (resultCode != ConnectionResult.SUCCESS) {
             if (apiAvailability.isUserResolvableError(resultCode)) {
@@ -428,12 +428,12 @@ public class ReactNativeNotificationHubModule extends ReactContextBaseJavaModule
 
     private static class GoogleApiAvailabilityRunnable implements Runnable {
         private final Activity activity;
-        private final GoogleApiAvailability apiAvailability;
+        private final GoogleApiAvailabilityLight apiAvailability;
         private final int resultCode;
 
         public GoogleApiAvailabilityRunnable(
                 Activity activity,
-                GoogleApiAvailability apiAvailability,
+                GoogleApiAvailabilityLight apiAvailability,
                 int resultCode) {
             this.activity = activity;
             this.apiAvailability = apiAvailability;
@@ -442,7 +442,7 @@ public class ReactNativeNotificationHubModule extends ReactContextBaseJavaModule
 
         @Override
         public void run() {
-            apiAvailability.getErrorDialog(activity, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST).show();
+            //apiAvailability.getErrorDialog(activity, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST).show();
         }
     }
 }
