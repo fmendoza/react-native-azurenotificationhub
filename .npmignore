@@ -4,3 +4,4 @@
 .slather.yml
 azure-pipelines.yml
 sample
+android/.gradle/
