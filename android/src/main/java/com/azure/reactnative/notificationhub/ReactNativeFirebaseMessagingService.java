@@ -17,6 +17,9 @@ public class ReactNativeFirebaseMessagingService extends FirebaseMessagingServic
 
     private static final String TAG = "ReactNativeFMS";
 
+    // Maximum allowed notifications in the notification tray
+    private static final Integer NOTIFICATION_VISIBLE_LIMIT = 20;
+
     private static String notificationChannelID;
 
     public static void createNotificationChannel(Context context) {
@@ -90,6 +93,11 @@ public class ReactNativeFirebaseMessagingService extends FirebaseMessagingServic
             createNotificationChannel(this);
         }
 
+        // Cancel visible notifications if the Android version is Marshmallow (6.0) or higher
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            cancelVisibleNotifications();
+        }
+
         Bundle bundle = remoteMessage.toIntent().getExtras();
         if (notificationHubUtil.getAppIsForeground()) {
             bundle.putBoolean(KEY_REMOTE_NOTIFICATION_FOREGROUND, true);
@@ -100,5 +108,27 @@ public class ReactNativeFirebaseMessagingService extends FirebaseMessagingServic
         }
 
         ReactNativeNotificationsHandler.sendBroadcast(this, bundle, 0);
+    }
+
+    /**
+     * Cancels visible notifications in the notification tray to
+     * ensure the app can continue receiving new notifications.
+     */
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    private void cancelVisibleNotifications() {
+
+        // Initialize notification manager
+        NotificationManager notificationManager = (NotificationManager)
+                getSystemService(Context.NOTIFICATION_SERVICE);
+
+        // Get an array of currently visible notifications
+        StatusBarNotification[] activeNotifications = notificationManager
+                .getActiveNotifications();
+
+        // Check if the number of visible notifications exceeds the limit
+        if (activeNotifications != null && activeNotifications.length > NOTIFICATION_VISIBLE_LIMIT) {
+            // Cancel all visible notifications
+            notificationManager.cancelAll();
+        }
     }
 }
