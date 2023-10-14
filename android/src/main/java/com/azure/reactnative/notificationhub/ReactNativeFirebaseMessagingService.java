@@ -1,7 +1,5 @@
 package com.azure.reactnative.notificationhub;
 
-import android.app.Activity;
-import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -76,7 +74,7 @@ public class ReactNativeFirebaseMessagingService extends FirebaseMessagingServic
 
             notificationChannelID = NOTIFICATION_CHANNEL_ID;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                NotificationChannel channel = builder.build();
+                NotificationChannel channel = builder.build(context);
                 NotificationManager notificationManager = (NotificationManager) context.getSystemService(
                         Context.NOTIFICATION_SERVICE);
                 if (notificationManager != null) {
@@ -101,34 +99,68 @@ public class ReactNativeFirebaseMessagingService extends FirebaseMessagingServic
 
     @Override
     public void onNewToken(String token) {
-        Log.i(TAG, "Refreshing FCM Registration Token");
-
         Intent intent = ReactNativeNotificationHubUtil.IntentFactory.createIntent(this, ReactNativeRegistrationIntentService.class);
         ReactNativeRegistrationIntentService.enqueueWork(this, intent);
+    }
+
+    /**
+     * Gets called when a notification is received
+     * on the foreground and background.
+     */
+    @Override
+    public void handleIntent(Intent intent) {
+
+        try {
+            if (intent.getExtras() != null) {
+                String className = ReactNativeFirebaseMessagingService.class.getSimpleName();
+                RemoteMessage.Builder builder = new RemoteMessage.Builder(className);
+
+                for (String key : intent.getExtras().keySet()) {
+                    builder.addData(key, intent.getExtras().get(key).toString());
+                }
+
+                onMessageReceived(builder.build());
+            }
+            else {
+                super.handleIntent(intent);
+            }
+        }
+        catch (Exception e) {
+            super.handleIntent(intent);
+        }
     }
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         ReactNativeNotificationHubUtil notificationHubUtil = ReactNativeNotificationHubUtil.getInstance();
-        Log.d(TAG, "Remote message from: " + remoteMessage.getFrom());
 
         if (notificationChannelID == null) {
             createNotificationChannel(this);
         }
 
         Bundle bundle = remoteMessage.toIntent().getExtras();
+
+        // Retrieve notification body from google notification payload
+        if (bundle.get(KEY_REMOTE_GCM_NOTIFICATION_BODY) != null) {
+            bundle.putString(KEY_REMOTE_NOTIFICATION_BODY, bundle.getString(KEY_REMOTE_GCM_NOTIFICATION_BODY));
+        }
+
+        // Retrieve notification title from google notification payload
+        if (bundle.get(KEY_REMOTE_GCM_NOTIFICATION_TITLE) != null) {
+            bundle.putString(KEY_REMOTE_NOTIFICATION_TITLE, bundle.getString(KEY_REMOTE_GCM_NOTIFICATION_TITLE));
+        }
+
+        // Try to cancel the oldest visible notification to ensure
+        // that the app can continue displaying new notifications
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            cancelOldestVisibleNotification();
+        }
+
         if (bundle != null && notificationHubUtil.getAppIsForeground()) {
             bundle.putBoolean(KEY_REMOTE_NOTIFICATION_FOREGROUND, true);
             bundle.putBoolean(KEY_REMOTE_NOTIFICATION_USER_INTERACTION, false);
             bundle.putBoolean(KEY_REMOTE_NOTIFICATION_COLDSTART, false);
         } else {
-
-            // Try to cancel the oldest visible notification to ensure
-            // that the app can continue displaying new notifications
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                cancelOldestVisibleNotification();
-            }
-
             ReactNativeNotificationsHandler.sendNotification(this, bundle, notificationChannelID);
         }
 
@@ -162,7 +194,7 @@ public class ReactNativeFirebaseMessagingService extends FirebaseMessagingServic
             }
 
             // Check if the number of visible notifications exceeds the limit
-            if (notifications.size() > NOTIFICATION_VISIBLE_LIMIT) {
+            if (notifications.size() >= NOTIFICATION_VISIBLE_LIMIT) {
 
                 // Sort notifications by post time in ascending order (if supported)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
