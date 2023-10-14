@@ -1,33 +1,17 @@
 package com.azure.reactnative.notificationhub;
 
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
-import android.media.RingtoneManager;
-import android.net.Uri;
-import android.os.Bundle;
-import android.util.Log;
-
-import androidx.core.app.NotificationCompat;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import com.facebook.react.bridge.ReactContext;
-import com.microsoft.windowsazure.messaging.NotificationHub;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import static com.azure.reactnative.notificationhub.ReactNativeConstants.*;
 
 public class ReactNativeNotificationHubUtil {
+
     public static final String TAG = "ReactNativeNotificationHubUtil";
 
     private static ReactNativeNotificationHubUtil sharedNotificationHubUtilInstance = null;

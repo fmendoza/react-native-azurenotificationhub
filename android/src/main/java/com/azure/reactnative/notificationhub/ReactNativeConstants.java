@@ -52,6 +52,8 @@ public final class ReactNativeConstants {
     public static final String KEY_REMOTE_NOTIFICATION_ID = "google.message_id";
     public static final String KEY_REMOTE_NOTIFICATION_TITLE = "title";
     public static final String KEY_REMOTE_NOTIFICATION_PRIORITY = "google.original_priority";
+    public static final String KEY_REMOTE_GCM_NOTIFICATION_BODY = "gcm.notification.body";
+    public static final String KEY_REMOTE_GCM_NOTIFICATION_TITLE = "gcm.notification.title";
     public static final String KEY_REMOTE_NOTIFICATION_TICKER = "ticker";
     public static final String KEY_REMOTE_NOTIFICATION_AUTO_CANCEL = "autoCancel";
     public static final String KEY_REMOTE_NOTIFICATION_GROUP = "group";
@@ -93,8 +95,12 @@ public final class ReactNativeConstants {
     // Resources
     public static final String RESOURCE_DEF_TYPE_MIPMAP = "mipmap";
     public static final String RESOURCE_DEF_TYPE_RAW = "raw";
+    public static final String RESOURCE_DEF_TYPE_DRAWABLE = "drawable";
     public static final String RESOURCE_NAME_NOTIFICATION = "ic_notification";
     public static final String RESOURCE_NAME_LAUNCHER = "ic_launcher";
+    public static final String RESOURCE_NAME_VECTOR_ICON = "ic_vector";
+    public static final String RESOURCE_NAME_NOTIFICATION_SOUND = "sound_notification";
+    public static final String RESOURCE_NOTIFICATION_COLOR = "#D32528";
 
     // Promise
     public static final String KEY_PROMISE_RESOLVE_UUID = "uuid";

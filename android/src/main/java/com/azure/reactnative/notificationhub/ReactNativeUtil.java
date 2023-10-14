@@ -183,7 +183,7 @@ public final class ReactNativeUtil {
         if (smallIcon != null) {
             smallIconResId = res.getIdentifier(smallIcon, RESOURCE_DEF_TYPE_MIPMAP, packageName);
         } else {
-            smallIconResId = res.getIdentifier(RESOURCE_NAME_NOTIFICATION, RESOURCE_DEF_TYPE_MIPMAP, packageName);
+            smallIconResId = res.getIdentifier(RESOURCE_NAME_VECTOR_ICON, RESOURCE_DEF_TYPE_DRAWABLE, packageName);
         }
 
         if (smallIconResId == 0) {
@@ -227,6 +227,16 @@ public final class ReactNativeUtil {
 
                 soundUri = Uri.parse("android.resource://" + context.getPackageName() + "/" + resId);
             }
+        } else {
+            int resId = context
+                    .getResources()
+                    .getIdentifier(
+                            RESOURCE_NAME_NOTIFICATION_SOUND,
+                            RESOURCE_DEF_TYPE_RAW,
+                            context.getPackageName()
+                    );
+            
+            soundUri = Uri.parse("android.resource://" + context.getPackageName() + "/" + resId);
         }
 
         return soundUri;

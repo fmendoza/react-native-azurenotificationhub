@@ -1,9 +1,16 @@
 package com.azure.reactnative.notificationhub;
 
+import static com.azure.reactnative.notificationhub.ReactNativeConstants.RESOURCE_DEF_TYPE_RAW;
+import static com.azure.reactnative.notificationhub.ReactNativeConstants.RESOURCE_NAME_NOTIFICATION_SOUND;
+
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.Context;
+import android.media.AudioAttributes;
+import android.net.Uri;
 
 public class ReactNativeNotificationChannelBuilder {
+
     private String mID = ReactNativeConstants.NOTIFICATION_CHANNEL_ID;
     private CharSequence mName = "rn-push-notification-channel-name";
     private int mImportance = NotificationManager.IMPORTANCE_DEFAULT;
@@ -21,11 +28,32 @@ public class ReactNativeNotificationChannelBuilder {
     private ReactNativeNotificationChannelBuilder() {
     }
 
-    public NotificationChannel build() {
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public NotificationChannel build(Context context) {
+
+        @SuppressLint("WrongConstant")
         NotificationChannel channel = new NotificationChannel(mID, mName, mImportance);
         channel.setShowBadge(mShowBadge);
         channel.enableLights(mEnableLights);
         channel.enableVibration(mEnableVibration);
+
+        // Set custom sound
+        AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .setUsage(AudioAttributes.USAGE_ALARM)
+                .build();
+
+        int resId = context
+                .getResources()
+                .getIdentifier(
+                        RESOURCE_NAME_NOTIFICATION_SOUND,
+                        RESOURCE_DEF_TYPE_RAW,
+                        context.getPackageName()
+                );
+
+        Uri soundUri = Uri.parse("android.resource://" + context.getPackageName() + "/" + resId);
+
+        channel.setSound(soundUri, audioAttributes);
 
         if (mDesc != null) {
             channel.setDescription(mDesc);

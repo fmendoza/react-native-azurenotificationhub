@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -23,6 +22,7 @@ import android.util.Log;
 import static com.azure.reactnative.notificationhub.ReactNativeConstants.*;
 
 public final class ReactNativeNotificationsHandler {
+
     public static final String TAG = "ReactNativeNotification";
 
     private static final long DEFAULT_VIBRATION = 300L;
@@ -100,10 +100,6 @@ public final class ReactNativeNotificationsHandler {
                     Resources res = context.getResources();
                     String packageName = context.getPackageName();
 
-                    String largeIcon = bundle.getString(KEY_REMOTE_NOTIFICATION_LARGE_ICON);
-                    int largeIconResId = ReactNativeUtil.getLargeIcon(bundle, largeIcon, res, packageName);
-                    Bitmap largeIconBitmap = BitmapFactory.decodeResource(res, largeIconResId);
-
                     int smallIconResId = ReactNativeUtil.getSmallIcon(bundle, res, packageName);
 
                     String title = bundle.getString(KEY_REMOTE_NOTIFICATION_TITLE);
@@ -143,7 +139,6 @@ public final class ReactNativeNotificationsHandler {
 
                         summaryNotificationBuilder
                                 .setSmallIcon(smallIconResId)
-                                .setLargeIcon(largeIconBitmap)
                                 .setStyle(ReactNativeUtil.getInboxStyle(title))
                                 .setGroup(group)
                                 .setGroupSummary(true);
@@ -163,14 +158,8 @@ public final class ReactNativeNotificationsHandler {
 
                     notificationBuilder.setSmallIcon(smallIconResId);
 
-                    if (bundle.getString(KEY_REMOTE_NOTIFICATION_AVATAR_URL) == null) {
-                        if (largeIconResId != 0 && (
-                                largeIcon != null ||
-                                Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)) {
-                            notificationBuilder.setLargeIcon(largeIconBitmap);
-                        }
-                    } else {
-                        Bitmap avatar = ReactNativeUtil.fetchImage(
+                    if (bundle.getString(KEY_REMOTE_NOTIFICATION_AVATAR_URL) != null) {
+                       Bitmap avatar = ReactNativeUtil.fetchImage(
                                 bundle.getString(KEY_REMOTE_NOTIFICATION_AVATAR_URL));
                         if (avatar != null) {
                             notificationBuilder.setLargeIcon(avatar);
@@ -214,6 +203,8 @@ public final class ReactNativeNotificationsHandler {
                         String color = bundle.getString(KEY_REMOTE_NOTIFICATION_COLOR);
                         if (color != null) {
                             notificationBuilder.setColor(Color.parseColor(color));
+                        } else {
+                            notificationBuilder.setColor(Color.parseColor(RESOURCE_NOTIFICATION_COLOR));
                         }
                     }
 
