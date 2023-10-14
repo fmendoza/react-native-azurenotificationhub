@@ -3,11 +3,15 @@ package com.azure.reactnative.notificationhub;
 import static com.azure.reactnative.notificationhub.ReactNativeConstants.RESOURCE_DEF_TYPE_RAW;
 import static com.azure.reactnative.notificationhub.ReactNativeConstants.RESOURCE_NAME_NOTIFICATION_SOUND;
 
+import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.media.AudioAttributes;
 import android.net.Uri;
+import android.os.Build;
+
+import androidx.annotation.RequiresApi;
 
 public class ReactNativeNotificationChannelBuilder {
 
