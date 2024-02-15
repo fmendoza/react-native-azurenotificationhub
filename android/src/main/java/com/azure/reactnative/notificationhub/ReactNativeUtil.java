@@ -375,7 +375,9 @@ public final class ReactNativeUtil {
 
         } else {
             NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-            return networkInfo != null && networkInfo.isConnected();
+            return networkInfo != null
+                    && networkInfo.isConnected()
+                    && networkInfo.getType() == ConnectivityManager.TYPE_WIFI;
         }
     }
 
