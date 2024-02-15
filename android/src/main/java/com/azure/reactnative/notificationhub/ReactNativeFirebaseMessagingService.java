@@ -14,6 +14,7 @@ import com.google.firebase.messaging.RemoteMessage;
 
 import static com.azure.reactnative.notificationhub.ReactNativeConstants.*;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
 import java.util.ArrayList;
@@ -48,6 +49,10 @@ public class ReactNativeFirebaseMessagingService extends FirebaseMessagingServic
             ReactNativeNotificationHubUtil notificationHubUtil = ReactNativeNotificationHubUtil.getInstance();
             ReactNativeNotificationChannelBuilder builder = ReactNativeNotificationChannelBuilder.Factory.create();
 
+            if (notificationHubUtil.hasChannelId(context)) {
+                builder.setId(notificationHubUtil.getChannelId(context));
+            }
+
             if (notificationHubUtil.hasChannelName(context)) {
                 builder.setName(notificationHubUtil.getChannelName(context));
             }
@@ -72,11 +77,15 @@ public class ReactNativeFirebaseMessagingService extends FirebaseMessagingServic
                 builder.enableVibration(notificationHubUtil.getChannelEnableVibration(context));
             }
 
-            notificationChannelID = NOTIFICATION_CHANNEL_ID;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+                notificationChannelID = NOTIFICATION_CHANNEL_ID;
+
                 NotificationChannel channel = builder.build(context);
-                NotificationManager notificationManager = (NotificationManager) context.getSystemService(
-                        Context.NOTIFICATION_SERVICE);
+
+                NotificationManager notificationManager =
+                        context.getSystemService(NotificationManager.class);
+
                 if (notificationManager != null) {
                     notificationManager.createNotificationChannel(channel);
                     notificationChannelID = channel.getId();
@@ -98,7 +107,7 @@ public class ReactNativeFirebaseMessagingService extends FirebaseMessagingServic
     }
 
     @Override
-    public void onNewToken(String token) {
+    public void onNewToken(@NonNull String token) {
         Intent intent = ReactNativeNotificationHubUtil.IntentFactory.createIntent(this, ReactNativeRegistrationIntentService.class);
         ReactNativeRegistrationIntentService.enqueueWork(this, intent);
     }
@@ -132,22 +141,40 @@ public class ReactNativeFirebaseMessagingService extends FirebaseMessagingServic
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
-        ReactNativeNotificationHubUtil notificationHubUtil = ReactNativeNotificationHubUtil.getInstance();
 
-        if (notificationChannelID == null) {
-            createNotificationChannel(this);
-        }
+        ReactNativeNotificationHubUtil notificationHubUtil = ReactNativeNotificationHubUtil.getInstance();
 
         Bundle bundle = remoteMessage.toIntent().getExtras();
 
-        // Retrieve notification body from google notification payload
-        if (bundle.get(KEY_REMOTE_GCM_NOTIFICATION_BODY) != null) {
-            bundle.putString(KEY_REMOTE_NOTIFICATION_BODY, bundle.getString(KEY_REMOTE_GCM_NOTIFICATION_BODY));
+        String message = null;
+
+        if (bundle != null) {
+            // Retrieve notification body from google notification payload
+            if (bundle.get(KEY_REMOTE_GCM_NOTIFICATION_BODY) != null) {
+                bundle.putString(KEY_REMOTE_NOTIFICATION_BODY, bundle.getString(KEY_REMOTE_GCM_NOTIFICATION_BODY));
+            }
+
+            // Retrieve notification title from google notification payload
+            if (bundle.get(KEY_REMOTE_GCM_NOTIFICATION_TITLE) != null) {
+                bundle.putString(KEY_REMOTE_NOTIFICATION_TITLE, bundle.getString(KEY_REMOTE_GCM_NOTIFICATION_TITLE));
+            }
+
+            if (bundle.get(KEY_REMOTE_NOTIFICATION_MESSAGE) != null) {
+                message = bundle.getString(KEY_REMOTE_NOTIFICATION_MESSAGE);
+            }
+
+            if (message == null && bundle.get(KEY_REMOTE_NOTIFICATION_BODY) != null) {
+                message = bundle.getString(KEY_REMOTE_NOTIFICATION_BODY);
+            }
         }
 
-        // Retrieve notification title from google notification payload
-        if (bundle.get(KEY_REMOTE_GCM_NOTIFICATION_TITLE) != null) {
-            bundle.putString(KEY_REMOTE_NOTIFICATION_TITLE, bundle.getString(KEY_REMOTE_GCM_NOTIFICATION_TITLE));
+        if (message == null) {
+            Log.e(TAG, ERROR_NO_MESSAGE);
+            return;
+        }
+
+        if (notificationChannelID == null) {
+            createNotificationChannel(this);
         }
 
         // Try to cancel the oldest visible notification to ensure
@@ -156,7 +183,7 @@ public class ReactNativeFirebaseMessagingService extends FirebaseMessagingServic
             cancelOldestVisibleNotification();
         }
 
-        if (bundle != null && notificationHubUtil.getAppIsForeground()) {
+        if (notificationHubUtil.getAppIsForeground()) {
             bundle.putBoolean(KEY_REMOTE_NOTIFICATION_FOREGROUND, true);
             bundle.putBoolean(KEY_REMOTE_NOTIFICATION_USER_INTERACTION, false);
             bundle.putBoolean(KEY_REMOTE_NOTIFICATION_COLDSTART, false);
@@ -174,8 +201,7 @@ public class ReactNativeFirebaseMessagingService extends FirebaseMessagingServic
     public void cancelOldestVisibleNotification() {
 
         // Initialize notification manager
-        NotificationManager notificationManager = (NotificationManager)
-                getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
 
         // Get an array of currently visible notifications
         StatusBarNotification[] statusBarNotifications = notificationManager
@@ -194,7 +220,7 @@ public class ReactNativeFirebaseMessagingService extends FirebaseMessagingServic
             }
 
             // Check if the number of visible notifications exceeds the limit
-            if (notifications.size() >= NOTIFICATION_VISIBLE_LIMIT) {
+            if (notifications.size() > NOTIFICATION_VISIBLE_LIMIT) {
 
                 // Sort notifications by post time in ascending order (if supported)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {

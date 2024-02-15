@@ -17,6 +17,7 @@ public final class ReactNativeConstants {
     public static final String KEY_REGISTRATION_HUBNAME = "hubName";
     public static final String KEY_REGISTRATION_SENDERID = "senderID";
     public static final String KEY_REGISTRATION_TAGS = "tags";
+    public static final String KEY_REGISTRATION_CHANNEL_ID = "channelId";
     public static final String KEY_REGISTRATION_CHANNELNAME = "channelName";
     public static final String KEY_REGISTRATION_CHANNELDESCRIPTION = "channelDescription";
     public static final String KEY_REGISTRATION_CHANNELIMPORTANCE = "channelImportance";
@@ -35,6 +36,7 @@ public final class ReactNativeConstants {
     public static final String KEY_FOR_PREFS_FCMTOKEN = "AzureNotificationHub_FCMToken";
     public static final String KEY_FOR_PREFS_TAGS = "AzureNotificationHub_Tags";
     public static final String KEY_FOR_PREFS_SENDERID = "AzureNotificationHub_senderID";
+    public static final String KEY_FOR_PREFS_CHANNEL_ID = "AzureNotificationHub_channelId";
     public static final String KEY_FOR_PREFS_CHANNELNAME = "AzureNotificationHub_channelName";
     public static final String KEY_FOR_PREFS_CHANNELDESCRIPTION = "AzureNotificationHub_channelDescription";
     public static final String KEY_FOR_PREFS_CHANNELIMPORTANCE = "AzureNotificationHub_channelImportance";

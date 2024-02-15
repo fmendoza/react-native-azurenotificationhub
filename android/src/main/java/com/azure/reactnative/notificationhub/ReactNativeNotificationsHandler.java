@@ -42,6 +42,7 @@ public final class ReactNativeNotificationsHandler {
                     LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(context);
                     localBroadcastManager.sendBroadcast(intent);
                 } catch (Exception e) {
+                    Log.e(TAG, e.toString());
                 }
             }
         });
@@ -63,6 +64,7 @@ public final class ReactNativeNotificationsHandler {
                     LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(context);
                     localBroadcastManager.sendBroadcast(intent);
                 } catch (Exception e) {
+                    Log.e(TAG, e.toString());
                 }
             }
         });
@@ -90,11 +92,6 @@ public final class ReactNativeNotificationsHandler {
                     String message = bundle.getString(KEY_REMOTE_NOTIFICATION_MESSAGE);
                     if (message == null) {
                         message = bundle.getString(KEY_REMOTE_NOTIFICATION_BODY);
-                    }
-
-                    if (message == null) {
-                        Log.e(TAG, ERROR_NO_MESSAGE);
-                        return;
                     }
 
                     Resources res = context.getResources();
@@ -159,7 +156,7 @@ public final class ReactNativeNotificationsHandler {
                     notificationBuilder.setSmallIcon(smallIconResId);
 
                     if (bundle.getString(KEY_REMOTE_NOTIFICATION_AVATAR_URL) != null) {
-                       Bitmap avatar = ReactNativeUtil.fetchImage(
+                        Bitmap avatar = ReactNativeUtil.fetchImage(
                                 bundle.getString(KEY_REMOTE_NOTIFICATION_AVATAR_URL));
                         if (avatar != null) {
                             notificationBuilder.setLargeIcon(avatar);
@@ -197,18 +194,21 @@ public final class ReactNativeNotificationsHandler {
                         notificationBuilder.setOngoing(bundle.getBoolean(KEY_REMOTE_NOTIFICATION_ONGOING));
                     }
 
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        notificationBuilder.setCategory(NotificationCompat.CATEGORY_CALL);
+                    notificationBuilder.setCategory(NotificationCompat.CATEGORY_CALL);
 
-                        String color = bundle.getString(KEY_REMOTE_NOTIFICATION_COLOR);
-                        if (color != null) {
-                            notificationBuilder.setColor(Color.parseColor(color));
-                        } else {
-                            notificationBuilder.setColor(Color.parseColor(RESOURCE_NOTIFICATION_COLOR));
-                        }
+                    String color = bundle.getString(KEY_REMOTE_NOTIFICATION_COLOR);
+                    if (color != null) {
+                        notificationBuilder.setColor(Color.parseColor(color));
+                    } else {
+                        notificationBuilder.setColor(Color.parseColor(RESOURCE_NOTIFICATION_COLOR));
                     }
 
-                    int notificationID = bundle.getString(KEY_REMOTE_NOTIFICATION_ID).hashCode();
+                    String notificationIDStr = bundle.getString(KEY_REMOTE_NOTIFICATION_ID);
+                    int notificationID = -1;
+
+                    if (notificationIDStr != null) {
+                        notificationID = notificationIDStr.hashCode();
+                    }
 
                     final PendingIntent pendingIntent;
 

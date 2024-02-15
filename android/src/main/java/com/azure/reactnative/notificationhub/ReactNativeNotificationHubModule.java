@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -36,19 +37,19 @@ public class ReactNativeNotificationHubModule extends ReactContextBaseJavaModule
     private static final int NOTIFICATION_DELAY_ON_START = 3000;
 
     private final ReactApplicationContext mReactContext;
-    private final LocalBroadcastReceiver mLocalBroadcastReceiver;
 
     public ReactNativeNotificationHubModule(ReactApplicationContext reactContext) {
         super(reactContext);
         this.mReactContext = reactContext;
-        this.mLocalBroadcastReceiver = new LocalBroadcastReceiver();
+        LocalBroadcastReceiver localBroadcastReceiver = new LocalBroadcastReceiver();
         LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(reactContext);
-        localBroadcastManager.registerReceiver(mLocalBroadcastReceiver, new IntentFilter(ReactNativeRegistrationIntentService.TAG));
-        localBroadcastManager.registerReceiver(mLocalBroadcastReceiver, new IntentFilter(ReactNativeNotificationsHandler.TAG));
+        localBroadcastManager.registerReceiver(localBroadcastReceiver, new IntentFilter(ReactNativeRegistrationIntentService.TAG));
+        localBroadcastManager.registerReceiver(localBroadcastReceiver, new IntentFilter(ReactNativeNotificationsHandler.TAG));
         reactContext.addLifecycleEventListener(this);
         reactContext.addActivityEventListener(this);
     }
 
+    @NonNull
     @Override
     public String getName() {
         return AZURE_NOTIFICATION_HUB_NAME;
@@ -123,6 +124,11 @@ public class ReactNativeNotificationHubModule extends ReactContextBaseJavaModule
         notificationHubUtil.setSenderID(reactContext, senderID);
         notificationHubUtil.setTemplated(reactContext, false);
         notificationHubUtil.setTags(reactContext, tags);
+
+        if (config.hasKey(KEY_REGISTRATION_CHANNEL_ID)) {
+            String channelId = config.getString(KEY_REGISTRATION_CHANNEL_ID);
+            notificationHubUtil.setChannelId(reactContext, channelId);
+        }
 
         if (config.hasKey(KEY_REGISTRATION_CHANNELNAME)) {
             String channelName = config.getString(KEY_REGISTRATION_CHANNELNAME);
@@ -235,6 +241,11 @@ public class ReactNativeNotificationHubModule extends ReactContextBaseJavaModule
         notificationHubUtil.setTemplate(reactContext, template);
         notificationHubUtil.setTemplated(reactContext, true);
         notificationHubUtil.setTags(reactContext, tags);
+
+        if (config.hasKey(KEY_REGISTRATION_CHANNEL_ID)) {
+            String channelId = config.getString(KEY_REGISTRATION_CHANNEL_ID);
+            notificationHubUtil.setChannelId(reactContext, channelId);
+        }
 
         if (config.hasKey(KEY_REGISTRATION_CHANNELNAME)) {
             String channelName = config.getString(KEY_REGISTRATION_CHANNELNAME);

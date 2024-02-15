@@ -9,12 +9,15 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.RingtoneManager;
 import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
@@ -26,12 +29,10 @@ import com.microsoft.windowsazure.messaging.NotificationHub;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -48,21 +49,7 @@ public final class ReactNativeUtil {
     }
 
     public static NotificationHub createNotificationHub(String hubName, String connectionString, Context context) {
-        NotificationHub hub = new NotificationHub(hubName, connectionString, context);
-        return hub;
-    }
-
-    public static JSONObject convertBundleToJSON(Bundle bundle) {
-        JSONObject json = new JSONObject();
-        Set<String> keys = bundle.keySet();
-        for (String key : keys) {
-            try {
-                json.put(key, bundle.get(key));
-            } catch (JSONException e) {
-            }
-        }
-
-        return json;
+        return new NotificationHub(hubName, connectionString, context);
     }
 
     public static WritableMap convertBundleToMap(Bundle bundle) {
@@ -100,7 +87,7 @@ public final class ReactNativeUtil {
                     map.putNull(key);
                 }
             } catch (ClassCastException e) {
-                // TODO: Warn
+                Log.e(TAG, e.toString());
             }
         }
 
@@ -307,14 +294,13 @@ public final class ReactNativeUtil {
                                                                     int visibility,
                                                                     int priority,
                                                                     boolean autoCancel) {
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context, notificationChannelID)
+
+        return new NotificationCompat.Builder(context, notificationChannelID)
                 .setContentTitle(title)
                 .setTicker(ticker)
                 .setVisibility(visibility)
                 .setPriority(priority)
                 .setAutoCancel(autoCancel);
-
-        return notificationBuilder;
     }
 
     public static Bundle getBundleFromIntent(Intent intent) {
@@ -363,18 +349,36 @@ public final class ReactNativeUtil {
         }
     }
 
-    public static boolean isConnectedToWiFi(Context context) {
-        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+    public static Boolean isConnectedToWiFi(@NonNull Context context) {
 
-        NetworkInfo networkInfo = connectivityManager != null ? connectivityManager.getActiveNetworkInfo() : null;
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
-        boolean isConnected = false;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
-        if (networkInfo != null && networkInfo.isConnected()) {
-            isConnected = networkInfo.getType() == ConnectivityManager.TYPE_WIFI;
+            Network networkManager = connectivityManager.getActiveNetwork();
+            if (networkManager == null) {
+                return false;
+            }
+
+            NetworkCapabilities networkCapabilities =
+                    connectivityManager.getNetworkCapabilities(networkManager);
+
+            if (networkCapabilities == null) {
+                return false;
+            }
+
+            return networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+                    && networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                    && networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+                    && networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED);
+
+        } else {
+            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+            return networkInfo != null
+                    && networkInfo.isConnected()
+                    && networkInfo.getType() == ConnectivityManager.TYPE_WIFI;
         }
-
-        return isConnected;
     }
 
     public static String genUUID() {

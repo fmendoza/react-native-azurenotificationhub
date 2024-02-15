@@ -4,6 +4,7 @@ declare namespace AzureNotificationHub {
         hubName: string;
         senderID: string;
         tags: string[];
+        channelId: string;
         channelName: string;
         channelImportance: boolean;
         channelShowBadge: boolean;

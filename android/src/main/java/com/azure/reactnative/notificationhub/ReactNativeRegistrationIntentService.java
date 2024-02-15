@@ -3,13 +3,14 @@ package com.azure.reactnative.notificationhub;
 import android.content.Context;
 import android.content.Intent;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.JobIntentService;
 
 import android.util.Log;
 
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.InstanceIdResult;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.microsoft.windowsazure.messaging.NotificationHub;
 
 import java.util.concurrent.ExecutorService;
@@ -31,7 +32,7 @@ public class ReactNativeRegistrationIntentService extends JobIntentService {
     }
 
     @Override
-    protected void onHandleWork(Intent intent) {
+    protected void onHandleWork(@NonNull Intent intent) {
         final Intent event = ReactNativeNotificationHubUtil.IntentFactory.createIntent(TAG);
         final ReactNativeNotificationHubUtil notificationHubUtil = ReactNativeNotificationHubUtil.getInstance();
         final String connectionString = notificationHubUtil.getConnectionString(this);
@@ -49,14 +50,22 @@ public class ReactNativeRegistrationIntentService extends JobIntentService {
             return;
         }
 
-        FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(
-                mPool, new OnSuccessListener<InstanceIdResult>() {
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(mPool, new OnCompleteListener<String>() {
                     @Override
-                    public void onSuccess(InstanceIdResult instanceIdResult) {
+                    public void onComplete(@NonNull Task<String> task) {
+
+                        if (!task.isSuccessful()) {
+                            Log.w(TAG, "Fetching FCM registration token failed", task.getException());
+                            return;
+                        }
+
                         try {
+
+                            // Get new FCM registration token
+                            String token = task.getResult();
+
                             String regID = notificationHubUtil.getRegistrationID(ReactNativeRegistrationIntentService.this);
-                            String token = instanceIdResult.getToken();
-                            Log.d(TAG, "FCM Registration Token: " + token);
 
                             // Storing the registration ID indicates whether the generated token has been
                             // sent to your server. If it is not stored, send the token to your server.
