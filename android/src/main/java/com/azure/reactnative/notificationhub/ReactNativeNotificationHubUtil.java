@@ -89,6 +89,18 @@ public class ReactNativeNotificationHubUtil {
         setPref(context, KEY_FOR_PREFS_SENDERID, senderID);
     }
 
+    public String getChannelId(Context context) {
+        return getPref(context, KEY_FOR_PREFS_CHANNEL_ID);
+    }
+
+    public void setChannelId(Context context, String channelId) {
+        setPref(context, KEY_FOR_PREFS_CHANNEL_ID, channelId);
+    }
+
+    public boolean hasChannelId(Context context) {
+        return hasKey(context, KEY_FOR_PREFS_CHANNEL_ID);
+    }
+
     public String getChannelName(Context context) {
         return getPref(context, KEY_FOR_PREFS_CHANNELNAME);
     }

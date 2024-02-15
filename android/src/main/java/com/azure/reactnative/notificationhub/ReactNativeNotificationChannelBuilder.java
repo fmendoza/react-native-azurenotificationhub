@@ -44,7 +44,7 @@ public class ReactNativeNotificationChannelBuilder {
         // Set custom sound
         AudioAttributes audioAttributes = new AudioAttributes.Builder()
                 .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                .setUsage(AudioAttributes.USAGE_ALARM)
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
                 .build();
 
         int resId = context
@@ -64,6 +64,11 @@ public class ReactNativeNotificationChannelBuilder {
         }
 
         return channel;
+    }
+
+    public ReactNativeNotificationChannelBuilder setId(String id) {
+        this.mID = id;
+        return this;
     }
 
     public ReactNativeNotificationChannelBuilder setName(CharSequence name) {
