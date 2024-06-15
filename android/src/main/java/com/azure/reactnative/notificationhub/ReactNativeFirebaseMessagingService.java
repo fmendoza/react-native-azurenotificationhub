@@ -29,7 +29,7 @@ public class ReactNativeFirebaseMessagingService extends FirebaseMessagingServic
     /**
      * Maximum allowed notifications in the notification tray
      */
-    private static final Integer NOTIFICATION_VISIBLE_LIMIT = 20;
+    private static final Integer NOTIFICATION_VISIBLE_LIMIT = 15;
 
     /**
      * Identifier for ranker-group notifications
